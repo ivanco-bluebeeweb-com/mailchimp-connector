@@ -1,0 +1,770 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.13.0",
+  "app_id": "mailchimp-connector",
+  "version": "0.1.0",
+  "name": "Mailchimp",
+  "description": "Connect Mailchimp Marketing API to manage audiences, contacts, tags, campaigns, and reports.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "mailchimp:read",
+    "mailchimp:write"
+  ],
+  "tools": [
+    {
+      "name": "connect_mailchimp",
+      "description": "Connect a Mailchimp account using an API key and verify it against the account endpoint.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "label": {
+            "default": "",
+            "description": "Friendly label, e.g. Main marketing account.",
+            "title": "Label",
+            "type": "string"
+          },
+          "api_key": {
+            "description": "Mailchimp API key including its data-center suffix, e.g. ...-us21.",
+            "title": "Api Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "api_key"
+        ],
+        "title": "ConnectMailchimpParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.connect_mailchimp",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "list_connections",
+      "description": "List connected Mailchimp accounts without exposing API keys.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "Connection": {
+            "properties": {
+              "id": {
+                "default": "",
+                "title": "Id",
+                "type": "string"
+              },
+              "label": {
+                "default": "",
+                "title": "Label",
+                "type": "string"
+              },
+              "account_name": {
+                "default": "",
+                "title": "Account Name",
+                "type": "string"
+              }
+            },
+            "title": "Connection",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "connections": {
+            "items": {
+              "$ref": "#/$defs/Connection"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "title": "ConnectionList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "disconnect_mailchimp",
+      "description": "Disconnect a Mailchimp account and delete only its locally saved API key.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "delete:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.disconnect_mailchimp",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "list_audiences",
+      "description": "List audiences in the connected Mailchimp account.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "count": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "title": "ListAudiencesParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "Audience": {
+            "properties": {
+              "id": {
+                "default": "",
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "default": "",
+                "title": "Name",
+                "type": "string"
+              },
+              "member_count": {
+                "default": 0,
+                "title": "Member Count",
+                "type": "integer"
+              }
+            },
+            "title": "Audience",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "audiences": {
+            "items": {
+              "$ref": "#/$defs/Audience"
+            },
+            "title": "Audiences",
+            "type": "array"
+          }
+        },
+        "title": "AudienceList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "create_audience",
+      "description": "Create a new Mailchimp audience with required sender and contact details.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:audience"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "from_name": {
+            "title": "From Name",
+            "type": "string"
+          },
+          "from_email": {
+            "title": "From Email",
+            "type": "string"
+          },
+          "permission_reminder": {
+            "description": "Why recipients are receiving mail, e.g. You signed up on our website.",
+            "title": "Permission Reminder",
+            "type": "string"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "address1": {
+            "title": "Address1",
+            "type": "string"
+          },
+          "city": {
+            "title": "City",
+            "type": "string"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "zip": {
+            "title": "Zip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "from_name",
+          "from_email",
+          "permission_reminder",
+          "company",
+          "address1",
+          "city",
+          "country",
+          "zip"
+        ],
+        "title": "CreateAudienceParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.create_audience",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "list_members",
+      "description": "List members in one Mailchimp audience.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "audience_id": {
+            "title": "Audience Id",
+            "type": "string"
+          },
+          "count": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "audience_id"
+        ],
+        "title": "ListMembersParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "Member": {
+            "properties": {
+              "id": {
+                "default": "",
+                "title": "Id",
+                "type": "string"
+              },
+              "email": {
+                "default": "",
+                "title": "Email",
+                "type": "string"
+              },
+              "status": {
+                "default": "",
+                "title": "Status",
+                "type": "string"
+              },
+              "merge_fields": {
+                "additionalProperties": true,
+                "title": "Merge Fields",
+                "type": "object"
+              }
+            },
+            "title": "Member",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "members": {
+            "items": {
+              "$ref": "#/$defs/Member"
+            },
+            "title": "Members",
+            "type": "array"
+          }
+        },
+        "title": "MemberList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "upsert_member",
+      "description": "Create or update a Mailchimp audience member by email, with explicit opt-in status for new contacts.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:contact",
+        "update:contact"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "audience_id": {
+            "title": "Audience Id",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "status_if_new": {
+            "default": "subscribed",
+            "description": "New member status: subscribed, pending, unsubscribed, or transactional.",
+            "title": "Status If New",
+            "type": "string"
+          },
+          "merge_fields": {
+            "additionalProperties": true,
+            "description": "Audience merge fields, e.g. {'FNAME':'Ada'}.",
+            "title": "Merge Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "audience_id",
+          "email"
+        ],
+        "title": "UpsertMemberParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.upsert_member",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "list_tags",
+      "description": "List tags configured for a Mailchimp audience.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "audience_id": {
+            "title": "Audience Id",
+            "type": "string"
+          },
+          "count": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "audience_id"
+        ],
+        "title": "ListTagsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "Tag": {
+            "properties": {
+              "id": {
+                "default": 0,
+                "title": "Id",
+                "type": "integer"
+              },
+              "name": {
+                "default": "",
+                "title": "Name",
+                "type": "string"
+              }
+            },
+            "title": "Tag",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "tags": {
+            "items": {
+              "$ref": "#/$defs/Tag"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "title": "TagList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "create_tag",
+      "description": "Create a new static Mailchimp audience tag.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:tag"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "audience_id": {
+            "title": "Audience Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "audience_id",
+          "name"
+        ],
+        "title": "CreateTagParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.create_tag",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "list_campaigns",
+      "description": "List campaigns in the connected Mailchimp account.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "count": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "title": "ListCampaignsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "Campaign": {
+            "properties": {
+              "id": {
+                "default": "",
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "default": "",
+                "title": "Title",
+                "type": "string"
+              },
+              "status": {
+                "default": "",
+                "title": "Status",
+                "type": "string"
+              },
+              "emails_sent": {
+                "default": 0,
+                "title": "Emails Sent",
+                "type": "integer"
+              }
+            },
+            "title": "Campaign",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "campaigns": {
+            "items": {
+              "$ref": "#/$defs/Campaign"
+            },
+            "title": "Campaigns",
+            "type": "array"
+          }
+        },
+        "title": "CampaignList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "create_campaign",
+      "description": "Create a regular email campaign draft for one Mailchimp audience. It is not sent until send_campaign.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:campaign"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "audience_id": {
+            "title": "Audience Id",
+            "type": "string"
+          },
+          "subject_line": {
+            "title": "Subject Line",
+            "type": "string"
+          },
+          "from_name": {
+            "title": "From Name",
+            "type": "string"
+          },
+          "reply_to": {
+            "title": "Reply To",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "audience_id",
+          "subject_line",
+          "from_name",
+          "reply_to",
+          "title"
+        ],
+        "title": "CreateCampaignParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.create_campaign",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "send_campaign",
+      "description": "Send a Mailchimp campaign that is ready to send. This emails the campaign audience.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "send:email"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "campaign_id": {
+            "title": "Campaign Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "campaign_id"
+        ],
+        "title": "SendCampaignParams",
+        "type": "object"
+      },
+      "return_schema": {},
+      "event": "mailchimp-connector.send_campaign",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    },
+    {
+      "name": "audit_mailchimp_account",
+      "description": "Build a read-only Mailchimp snapshot: account name, audiences, members, and campaigns.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Saved Mailchimp account id; omit if only one account is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "AuditMailchimpParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "account_name": {
+            "default": "",
+            "title": "Account Name",
+            "type": "string"
+          },
+          "total_audiences": {
+            "default": 0,
+            "title": "Total Audiences",
+            "type": "integer"
+          },
+          "total_members": {
+            "default": 0,
+            "title": "Total Members",
+            "type": "integer"
+          },
+          "total_campaigns": {
+            "default": 0,
+            "title": "Total Campaigns",
+            "type": "integer"
+          }
+        },
+        "title": "MailchimpReport",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_mailchimp-connector_chat"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 677,
+  "panels": [
+    {
+      "panel_id": "home",
+      "slot": "left",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "mailchimp_setup",
+      "slot": "overlay",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "mailchimp_settings",
+      "slot": "center",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    }
+  ]
+}
