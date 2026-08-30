@@ -19,7 +19,7 @@ async def resolve_or_error(ctx, connection_id: str = ""):
     connection = await resolve(ctx, connection_id)
     if not connection: return None, ActionResult.error("No Mailchimp account found. Connect one with connect_mailchimp first.", code=mc.MC_NOT_CONNECTED)
     return connection, None
-@chat.function("connect_mailchimp", "Connect a Mailchimp account using an API key and verify it against the account endpoint.", action_type="write", chain_callable=True, effects=["create:connection"], event="mailchimp-connector.connect_mailchimp")
+@chat.function("connect_mailchimp", "Connect a Mailchimp account using an API key and verify it against the account endpoint.", action_type="write", chain_callable=True, effects=["create:connection"], event="mailchimp-connector.connect_mailchimp", data_model=ConnectionResult)
 async def connect_mailchimp(ctx, params: ConnectMailchimpParams) -> ActionResult:
     """Verify an API key before securely storing it."""
     try: account = await mc.request(params.api_key, "GET", "/", action="verify API key")
@@ -32,7 +32,7 @@ async def connect_mailchimp(ctx, params: ConnectMailchimpParams) -> ActionResult
 async def list_connections(ctx, params: NoParams) -> ActionResult:
     """Return safe connection metadata."""
     return ActionResult.ok(ConnectionList(connections=[Connection(id=x.get("id", ""), label=x.get("label", ""), account_name=x.get("account_name", "")) for x in await _load(ctx)]))
-@chat.function("disconnect_mailchimp", "Disconnect a Mailchimp account and delete only its locally saved API key.", action_type="write", chain_callable=True, effects=["delete:connection"], event="mailchimp-connector.disconnect_mailchimp")
+@chat.function("disconnect_mailchimp", "Disconnect a Mailchimp account and delete only its locally saved API key.", action_type="write", chain_callable=True, effects=["delete:connection"], event="mailchimp-connector.disconnect_mailchimp", data_model=DeleteResult)
 async def disconnect_mailchimp(ctx, params: DisconnectParams) -> ActionResult:
     """Remove saved access for one Mailchimp account."""
     items = await _load(ctx); kept = [x for x in items if x.get("id") != params.connection_id]

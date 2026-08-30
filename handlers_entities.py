@@ -25,7 +25,7 @@ async def list_audiences(ctx, params: ListAudiencesParams) -> ActionResult:
     except mc.ClientFail as exc: return _error(exc)
     return ActionResult.ok(AudienceList(audiences=[Audience(id=x.get("id", ""), name=x.get("name", ""), member_count=x.get("stats", {}).get("member_count", 0)) for x in data.get("lists", [])]))
 
-@chat.function("create_audience", "Create a new Mailchimp audience with required sender and contact details.", action_type="write", chain_callable=True, effects=["create:audience"], event="mailchimp-connector.create_audience")
+@chat.function("create_audience", "Create a new Mailchimp audience with required sender and contact details.", action_type="write", chain_callable=True, effects=["create:audience"], event="mailchimp-connector.create_audience", data_model=AudienceResult)
 async def create_audience(ctx, params: CreateAudienceParams) -> ActionResult:
     """Create a Mailchimp audience."""
     conn, err = await resolve_or_error(ctx, params.connection_id)
@@ -44,7 +44,7 @@ async def list_members(ctx, params: ListMembersParams) -> ActionResult:
     except mc.ClientFail as exc: return _error(exc)
     return ActionResult.ok(MemberList(members=[Member(id=x.get("id", ""), email=x.get("email_address", ""), status=x.get("status", ""), merge_fields=x.get("merge_fields", {})) for x in data.get("members", [])]))
 
-@chat.function("upsert_member", "Create or update a Mailchimp audience member by email, with explicit opt-in status for new contacts.", action_type="write", chain_callable=True, effects=["create:contact", "update:contact"], event="mailchimp-connector.upsert_member")
+@chat.function("upsert_member", "Create or update a Mailchimp audience member by email, with explicit opt-in status for new contacts.", action_type="write", chain_callable=True, effects=["create:contact", "update:contact"], event="mailchimp-connector.upsert_member", data_model=MemberResult)
 async def upsert_member(ctx, params: UpsertMemberParams) -> ActionResult:
     """Upsert one member using Mailchimp's deterministic subscriber hash."""
     conn, err = await resolve_or_error(ctx, params.connection_id)
@@ -64,7 +64,7 @@ async def list_tags(ctx, params: ListTagsParams) -> ActionResult:
     except mc.ClientFail as exc: return _error(exc)
     return ActionResult.ok(TagList(tags=[Tag(id=x.get("id", 0), name=x.get("name", "")) for x in data.get("segments", [])]))
 
-@chat.function("create_tag", "Create a new static Mailchimp audience tag.", action_type="write", chain_callable=True, effects=["create:tag"], event="mailchimp-connector.create_tag")
+@chat.function("create_tag", "Create a new static Mailchimp audience tag.", action_type="write", chain_callable=True, effects=["create:tag"], event="mailchimp-connector.create_tag", data_model=TagResult)
 async def create_tag(ctx, params: CreateTagParams) -> ActionResult:
     """Create a static segment, which Mailchimp uses as an audience tag."""
     conn, err = await resolve_or_error(ctx, params.connection_id)
@@ -82,7 +82,7 @@ async def list_campaigns(ctx, params: ListCampaignsParams) -> ActionResult:
     except mc.ClientFail as exc: return _error(exc)
     return ActionResult.ok(CampaignList(campaigns=[Campaign(id=x.get("id", ""), title=x.get("settings", {}).get("title", ""), status=x.get("status", ""), emails_sent=x.get("emails_sent", 0)) for x in data.get("campaigns", [])]))
 
-@chat.function("create_campaign", "Create a regular email campaign draft for one Mailchimp audience. It is not sent until send_campaign.", action_type="write", chain_callable=True, effects=["create:campaign"], event="mailchimp-connector.create_campaign")
+@chat.function("create_campaign", "Create a regular email campaign draft for one Mailchimp audience. It is not sent until send_campaign.", action_type="write", chain_callable=True, effects=["create:campaign"], event="mailchimp-connector.create_campaign", data_model=CampaignResult)
 async def create_campaign(ctx, params: CreateCampaignParams) -> ActionResult:
     """Create a Mailchimp campaign draft without sending it."""
     conn, err = await resolve_or_error(ctx, params.connection_id)
@@ -92,7 +92,7 @@ async def create_campaign(ctx, params: CreateCampaignParams) -> ActionResult:
     except mc.ClientFail as exc: return _error(exc)
     return ActionResult.ok(CampaignResult(id=data.get("id", ""), title=data.get("settings", {}).get("title", ""), status=data.get("status", "")))
 
-@chat.function("send_campaign", "Send a Mailchimp campaign that is ready to send. This emails the campaign audience.", action_type="write", chain_callable=True, effects=["send:email"], event="mailchimp-connector.send_campaign")
+@chat.function("send_campaign", "Send a Mailchimp campaign that is ready to send. This emails the campaign audience.", action_type="write", chain_callable=True, effects=["send:email"], event="mailchimp-connector.send_campaign", data_model=SendResult)
 async def send_campaign(ctx, params: SendCampaignParams) -> ActionResult:
     """Trigger sending only after Mailchimp accepts the campaign as ready."""
     conn, err = await resolve_or_error(ctx, params.connection_id)
