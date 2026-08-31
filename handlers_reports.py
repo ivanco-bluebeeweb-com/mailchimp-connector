@@ -22,9 +22,9 @@ async def audit_mailchimp_account(ctx, params: AuditMailchimpParams) -> ActionRe
         campaigns = await mc.request(conn["api_key"], "GET", "/campaigns", params={"count": 1}, action="count campaigns")
     except mc.ClientFail as exc:
         return ActionResult.error(exc.payload["message"], code=exc.payload["code"])
-    return ActionResult.ok(MailchimpReport(
+    return ActionResult.success(MailchimpReport(
         account_name=account.get("account_name", ""),
         total_audiences=audiences.get("total_items", len(audiences.get("lists", []))),
         total_members=sum(item.get("stats", {}).get("member_count", 0) for item in audiences.get("lists", [])),
         total_campaigns=campaigns.get("total_items", len(campaigns.get("campaigns", []))),
-    ))
+    ), summary="Mailchimp account audit ready.")

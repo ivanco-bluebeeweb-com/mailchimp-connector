@@ -23,7 +23,7 @@ async def list_audiences(ctx, params: ListAudiencesParams) -> ActionResult:
     if err: return err
     try: data = await mc.request(conn["api_key"], "GET", "/lists", params={"count": params.count}, action="list audiences")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(AudienceList(audiences=[Audience(id=x.get("id", ""), name=x.get("name", ""), member_count=x.get("stats", {}).get("member_count", 0)) for x in data.get("lists", [])]))
+    return ActionResult.success(AudienceList(audiences=[Audience(id=x.get("id", ""), name=x.get("name", ""), member_count=x.get("stats", {}).get("member_count", 0)) for x in data.get("lists", [])]), summary="Audiences listed.")
 
 @chat.function("create_audience", "Create a new Mailchimp audience with required sender and contact details.", action_type="write", chain_callable=True, effects=["create:audience"], event="mailchimp-connector.create_audience", data_model=AudienceResult)
 async def create_audience(ctx, params: CreateAudienceParams) -> ActionResult:
@@ -33,7 +33,7 @@ async def create_audience(ctx, params: CreateAudienceParams) -> ActionResult:
     body = {"name": params.name, "contact": {"company": params.company, "address1": params.address1, "city": params.city, "country": params.country, "zip": params.zip}, "permission_reminder": params.permission_reminder, "campaign_defaults": {"from_name": params.from_name, "from_email": params.from_email, "subject": "", "language": "en"}, "email_type_option": True}
     try: data = await mc.request(conn["api_key"], "POST", "/lists", json_body=body, action="create audience")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(AudienceResult(id=data.get("id", ""), name=data.get("name", "")))
+    return ActionResult.success(AudienceResult(id=data.get("id", ""), name=data.get("name", "")), summary="Audience created.")
 
 @chat.function("list_members", "List members in one Mailchimp audience.", action_type="read", chain_callable=True, data_model=MemberList)
 async def list_members(ctx, params: ListMembersParams) -> ActionResult:
@@ -42,7 +42,7 @@ async def list_members(ctx, params: ListMembersParams) -> ActionResult:
     if err: return err
     try: data = await mc.request(conn["api_key"], "GET", f"/lists/{params.audience_id}/members", params={"count": params.count}, action="list audience members")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(MemberList(members=[Member(id=x.get("id", ""), email=x.get("email_address", ""), status=x.get("status", ""), merge_fields=x.get("merge_fields", {})) for x in data.get("members", [])]))
+    return ActionResult.success(MemberList(members=[Member(id=x.get("id", ""), email=x.get("email_address", ""), status=x.get("status", ""), merge_fields=x.get("merge_fields", {})) for x in data.get("members", [])]), summary="Members listed.")
 
 @chat.function("upsert_member", "Create or update a Mailchimp audience member by email, with explicit opt-in status for new contacts.", action_type="write", chain_callable=True, effects=["create:contact", "update:contact"], event="mailchimp-connector.upsert_member", data_model=MemberResult)
 async def upsert_member(ctx, params: UpsertMemberParams) -> ActionResult:
@@ -53,7 +53,7 @@ async def upsert_member(ctx, params: UpsertMemberParams) -> ActionResult:
     body = {"email_address": params.email, "status_if_new": params.status_if_new, "merge_fields": params.merge_fields}
     try: data = await mc.request(conn["api_key"], "PUT", f"/lists/{params.audience_id}/members/{member_hash}", json_body=body, action="upsert audience member")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(MemberResult(id=data.get("id", ""), email=data.get("email_address", ""), status=data.get("status", "")))
+    return ActionResult.success(MemberResult(id=data.get("id", ""), email=data.get("email_address", ""), status=data.get("status", "")), summary="Upsert member done.")
 
 @chat.function("list_tags", "List tags configured for a Mailchimp audience.", action_type="read", chain_callable=True, data_model=TagList)
 async def list_tags(ctx, params: ListTagsParams) -> ActionResult:
@@ -62,7 +62,7 @@ async def list_tags(ctx, params: ListTagsParams) -> ActionResult:
     if err: return err
     try: data = await mc.request(conn["api_key"], "GET", f"/lists/{params.audience_id}/segments", params={"count": params.count, "type": "static"}, action="list tags")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(TagList(tags=[Tag(id=x.get("id", 0), name=x.get("name", "")) for x in data.get("segments", [])]))
+    return ActionResult.success(TagList(tags=[Tag(id=x.get("id", 0), name=x.get("name", "")) for x in data.get("segments", [])]), summary="Tags listed.")
 
 @chat.function("create_tag", "Create a new static Mailchimp audience tag.", action_type="write", chain_callable=True, effects=["create:tag"], event="mailchimp-connector.create_tag", data_model=TagResult)
 async def create_tag(ctx, params: CreateTagParams) -> ActionResult:
@@ -71,7 +71,7 @@ async def create_tag(ctx, params: CreateTagParams) -> ActionResult:
     if err: return err
     try: data = await mc.request(conn["api_key"], "POST", f"/lists/{params.audience_id}/segments", json_body={"name": params.name, "static_segment": []}, action="create tag")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(TagResult(id=data.get("id", 0), name=data.get("name", "")))
+    return ActionResult.success(TagResult(id=data.get("id", 0), name=data.get("name", "")), summary="Tag created.")
 
 @chat.function("list_campaigns", "List campaigns in the connected Mailchimp account.", action_type="read", chain_callable=True, data_model=CampaignList)
 async def list_campaigns(ctx, params: ListCampaignsParams) -> ActionResult:
@@ -80,7 +80,7 @@ async def list_campaigns(ctx, params: ListCampaignsParams) -> ActionResult:
     if err: return err
     try: data = await mc.request(conn["api_key"], "GET", "/campaigns", params={"count": params.count}, action="list campaigns")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(CampaignList(campaigns=[Campaign(id=x.get("id", ""), title=x.get("settings", {}).get("title", ""), status=x.get("status", ""), emails_sent=x.get("emails_sent", 0)) for x in data.get("campaigns", [])]))
+    return ActionResult.success(CampaignList(campaigns=[Campaign(id=x.get("id", ""), title=x.get("settings", {}).get("title", ""), status=x.get("status", ""), emails_sent=x.get("emails_sent", 0)) for x in data.get("campaigns", [])]), summary="Campaigns listed.")
 
 @chat.function("create_campaign", "Create a regular email campaign draft for one Mailchimp audience. It is not sent until send_campaign.", action_type="write", chain_callable=True, effects=["create:campaign"], event="mailchimp-connector.create_campaign", data_model=CampaignResult)
 async def create_campaign(ctx, params: CreateCampaignParams) -> ActionResult:
@@ -90,7 +90,7 @@ async def create_campaign(ctx, params: CreateCampaignParams) -> ActionResult:
     body = {"type": "regular", "recipients": {"list_id": params.audience_id}, "settings": {"subject_line": params.subject_line, "from_name": params.from_name, "reply_to": params.reply_to, "title": params.title}}
     try: data = await mc.request(conn["api_key"], "POST", "/campaigns", json_body=body, action="create campaign")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(CampaignResult(id=data.get("id", ""), title=data.get("settings", {}).get("title", ""), status=data.get("status", "")))
+    return ActionResult.success(CampaignResult(id=data.get("id", ""), title=data.get("settings", {}).get("title", ""), status=data.get("status", "")), summary="Campaign created.")
 
 @chat.function("send_campaign", "Send a Mailchimp campaign that is ready to send. This emails the campaign audience.", action_type="write", chain_callable=True, effects=["send:email"], event="mailchimp-connector.send_campaign", data_model=SendResult)
 async def send_campaign(ctx, params: SendCampaignParams) -> ActionResult:
@@ -99,4 +99,4 @@ async def send_campaign(ctx, params: SendCampaignParams) -> ActionResult:
     if err: return err
     try: await mc.request(conn["api_key"], "POST", f"/campaigns/{params.campaign_id}/actions/send", action="send campaign")
     except mc.ClientFail as exc: return _error(exc)
-    return ActionResult.ok(SendResult(id=params.campaign_id, status="send_requested"))
+    return ActionResult.success(SendResult(id=params.campaign_id, status="send_requested"), summary="Campaign send requested.")

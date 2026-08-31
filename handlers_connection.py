@@ -27,14 +27,14 @@ async def connect_mailchimp(ctx, params: ConnectMailchimpParams) -> ActionResult
     connection_id = str(uuid.uuid4()); items = await _load(ctx)
     items.append({"id": connection_id, "label": params.label or account.get("account_name", "Mailchimp account"), "account_name": account.get("account_name", ""), "api_key": params.api_key})
     await _save(ctx, items)
-    return ActionResult.ok(ConnectionResult(connection_id=connection_id, label=items[-1]["label"]))
+    return ActionResult.success(ConnectionResult(connection_id=connection_id, label=items[-1]["label"]), summary="Mailchimp connected.")
 @chat.function("list_connections", "List connected Mailchimp accounts without exposing API keys.", action_type="read", chain_callable=True, data_model=ConnectionList)
 async def list_connections(ctx, params: NoParams) -> ActionResult:
     """Return safe connection metadata."""
-    return ActionResult.ok(ConnectionList(connections=[Connection(id=x.get("id", ""), label=x.get("label", ""), account_name=x.get("account_name", "")) for x in await _load(ctx)]))
+    return ActionResult.success(ConnectionList(connections=[Connection(id=x.get("id", ""), label=x.get("label", ""), account_name=x.get("account_name", "")) for x in await _load(ctx)]), summary="Connections listed.")
 @chat.function("disconnect_mailchimp", "Disconnect a Mailchimp account and delete only its locally saved API key.", action_type="write", chain_callable=True, effects=["delete:connection"], event="mailchimp-connector.disconnect_mailchimp", data_model=DeleteResult)
 async def disconnect_mailchimp(ctx, params: DisconnectParams) -> ActionResult:
     """Remove saved access for one Mailchimp account."""
     items = await _load(ctx); kept = [x for x in items if x.get("id") != params.connection_id]
     if len(kept) == len(items): return ActionResult.error("Mailchimp connection was not found.", code=mc.MC_NOT_FOUND)
-    await _save(ctx, kept); return ActionResult.ok(DeleteResult(deleted=True, id=params.connection_id))
+    await _save(ctx, kept); return ActionResult.success(DeleteResult(deleted=True, id=params.connection_id), summary="Mailchimp disconnected.")
