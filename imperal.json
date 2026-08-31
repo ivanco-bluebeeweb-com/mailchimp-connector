@@ -42,7 +42,22 @@
         "title": "ConnectMailchimpParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.connect_mailchimp",
       "background": false,
       "long_running": false,
@@ -125,7 +140,22 @@
         "title": "DisconnectParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "deleted": {
+            "default": false,
+            "title": "Deleted",
+            "type": "boolean"
+          },
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "title": "DeleteResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.disconnect_mailchimp",
       "background": false,
       "long_running": false,
@@ -269,7 +299,22 @@
         "title": "CreateAudienceParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "AudienceResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.create_audience",
       "background": false,
       "long_running": false,
@@ -402,7 +447,27 @@
         "title": "UpsertMemberParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "email": {
+            "default": "",
+            "title": "Email",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "MemberResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.upsert_member",
       "background": false,
       "long_running": false,
@@ -512,7 +577,22 @@
         "title": "CreateTagParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": 0,
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "TagResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.create_tag",
       "background": false,
       "long_running": false,
@@ -640,7 +720,27 @@
         "title": "CreateCampaignParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "CampaignResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.create_campaign",
       "background": false,
       "long_running": false,
@@ -675,7 +775,22 @@
         "title": "SendCampaignParams",
         "type": "object"
       },
-      "return_schema": {},
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "SendResult",
+        "type": "object"
+      },
       "event": "mailchimp-connector.send_campaign",
       "background": false,
       "long_running": false,
@@ -738,6 +853,11 @@
   "schedules": [],
   "required_scopes": [],
   "icon_size_bytes": 677,
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
   "panels": [
     {
       "panel_id": "home",
@@ -765,6 +885,16 @@
       "icon": "",
       "refresh": "manual",
       "center_overlay": false
+    }
+  ],
+  "secrets": [
+    {
+      "name": "mailchimp_connections",
+      "description": "JSON array of connected Mailchimp accounts/credentials. Managed by the app's connect/disconnect tools.",
+      "required": false,
+      "write_mode": "both",
+      "max_bytes": 16384,
+      "scope": "user"
     }
   ]
 }
