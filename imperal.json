@@ -896,5 +896,31 @@
       "max_bytes": 16384,
       "scope": "user"
     }
-  ]
+  ],
+  "pricing": {
+    "model": "per_action",
+    "currency": "credits",
+    "monthly_price": 0,
+    "free_tools": [
+      "connect_mailchimp",
+      "list_connections",
+      "disconnect_mailchimp"
+    ],
+    "tool_prices": {
+      "connect_mailchimp": 0,
+      "list_connections": 0,
+      "disconnect_mailchimp": 0,
+      "list_audiences": 8,
+      "create_audience": 16,
+      "list_members": 8,
+      "upsert_member": 16,
+      "list_tags": 8,
+      "create_tag": 16,
+      "list_campaigns": 8,
+      "create_campaign": 16,
+      "send_campaign": 16,
+      "audit_mailchimp_account": 20
+    },
+    "notes": "Standard platform scale {0, 8, 16, 20, 40}. 0 = access setup and harmless discovery. 8 = read/list/search. 16 = standard single mutation/CRUD. 20 = bulk or heavy audit operation."
+  }
 }
